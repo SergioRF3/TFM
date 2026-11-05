@@ -1,3 +1,6 @@
+imagenes/
+Category and Attribute Prediction Benchmark/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
