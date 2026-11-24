@@ -5,6 +5,8 @@ from torchvision import models, transforms
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
+import os
+from azure.storage.blob import BlobServiceClient
 
 app = FastAPI(
     title="Fashion Recommendation API",
@@ -21,8 +23,21 @@ model.classifier[2] = nn.Linear(in_features, 50)
 
 # Cargar pesos guardados
 MODEL_PATH = "best_convnext_categories.pth"
+CONTAINER_NAME = "tfm-container"
+BLOB_NAME = "models/best_convnext_latest.pth"
+CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+
 try:
-    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    blob_service_client = BlobServiceClient.from_connection_string(CONNECTION_STRING)
+    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
+    with open(MODEL_PATH, "wb") as f:
+        f.write(blob_client.download_blob().readall())
+    print("✅ Modelo descargado desde Azure Blob Storage.")
+except Exception as e:
+    print(f"⚠️ Error al descargar desde Azure: {e}")
+
+try:
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device, weights_only=True))
     model.to(device)
     model.eval()
     print("✅ Modelo de PyTorch cargado correctamente.")
