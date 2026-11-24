@@ -18,7 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código de la aplicación y el modelo entrenado
 COPY main.py .
-COPY best_convnext_categories.pth .
 
 # Puertos expuestos
 EXPOSE 8000
